@@ -16,6 +16,12 @@ import os;
 from math import *
 import sys
 
+u_index = {u"京": 0, u"沪": 1, u"津": 2, u"渝": 3, u"冀": 4, u"晋": 5, u"蒙": 6, u"辽": 7, u"吉": 8, u"黑": 9, u"苏": 10, u"浙": 11, u"皖": 12,
+         u"闽": 13, u"赣": 14, u"鲁": 15, u"豫": 16, u"鄂": 17, u"湘": 18, u"粤": 19, u"桂": 20, u"琼": 21, u"川": 22, u"贵": 23, u"云": 24,
+         u"藏": 25, u"陕": 26, u"甘": 27, u"青": 28, u"宁": 29, u"新": 30, u"0": 31, u"1": 32, u"2": 33, u"3": 34, u"4": 35, u"5": 36,
+         u"6": 37, u"7": 38, u"8": 39, u"9": 40, u"A": 41, u"B": 42, u"C": 43, u"D": 44, u"E": 45, u"F": 46, u"G": 47, u"H": 48,
+         u"J": 49, u"K": 50, u"L": 51, u"M": 52, u"N": 53, u"P": 54, u"Q": 55, u"R": 56, u"S": 57, u"T": 58, u"U": 59, u"V": 60,
+         u"W": 61, u"X": 62, u"Y": 63, u"Z": 64}
 
 index = {"京": 0, "沪": 1, "津": 2, "渝": 3, "冀": 4, "晋": 5, "蒙": 6, "辽": 7, "吉": 8, "黑": 9, "苏": 10, "浙": 11, "皖": 12,
          "闽": 13, "赣": 14, "鲁": 15, "豫": 16, "鄂": 17, "湘": 18, "粤": 19, "桂": 20, "琼": 21, "川": 22, "贵": 23, "云": 24,
@@ -173,7 +179,12 @@ class GenPlate:
     
     def generate(self,text):
         if len(text) == 9:
-            fg = self.draw(text.decode(encoding="utf-8"));
+            utext = text.decode(encoding="utf-8")
+            fg = self.draw(utext);
+            img_name = ''
+            for k in range(0, len(utext)):
+                img_name += str(u_index[utext[k]]) + ' '
+            
             fg = cv2.bitwise_not(fg);
             com = cv2.bitwise_or(fg,self.bg);
             com = rot(com,r(60)-30,com.shape,30);
@@ -182,7 +193,7 @@ class GenPlate:
             com = random_envirment(com,self.noplates_path);
             com = AddGauss(com, 1+r(4));
             com = addNoise(com);
-            return com
+            return com, img_name
 
     def genPlateString(self,pos,val):
         '''
@@ -218,14 +229,14 @@ class GenPlate:
     def genBatch(self, batchSize,pos,charRange, outputPath,size):
         if (not os.path.exists(outputPath)):
             os.mkdir(outputPath)
-	outfile = open('label.txt','w')
+	# outfile = open('label.txt','w')
         for i in xrange(batchSize):
                 plateStr,plate = G.genPlateString(-1,-1)
                 print plateStr,plate
-		img =  G.generate(plateStr);
+		img, img_name =  G.generate(plateStr);
                 img = cv2.resize(img,size);
-                cv2.imwrite(outputPath + "/" + str(i).zfill(2) + ".jpg", img);
-		outfile.write(str(plate)+"\n")
+                cv2.imwrite(outputPath + "/" + img_name + ".jpg", img);
+		# outfile.write(str(plate)+"\n")
 G = GenPlate("./font/platech.ttf",'./font/platechar.ttf',"./NoPlates")
 #G.genBatch(100,2,range(31,65),"./plate_100",(272,72))
 
